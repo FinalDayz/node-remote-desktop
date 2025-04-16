@@ -1,4 +1,18 @@
+let mousePressed = false;
+const ignoreKeys = ['Meta'];
+const mappedKeys = {
+  'ArrowRight': 'right',
+  'ArrowLeft': 'left',
+  'ArrowUp': 'up',
+  'ArrowDown': 'down',
+};
+
 async function handleKeyInput(key, code) {
+
+  if (key in mappedKeys) {
+    key = mappedKeys[key];
+  }
+
   if (message.type === 'key-down') {
     const { key, code } = message;
     if (ignoreKeys.includes(key)) {
@@ -16,8 +30,6 @@ async function handleKeyInput(key, code) {
     if (key.length === 1 || ignoreKeys.includes(key)) {
       return;
     }
-
-    console.log(`Key ${key} released , code: ${code}`);
     robot.keyToggle(key.toLowerCase(), 'up');
   }
 

@@ -3,7 +3,8 @@ const { Monitor } = require("node-screenshots");
 const WebSocket = require("ws");
 const robot = require("robotjs");
 const sharp = require('sharp');
-const { handleKeyInput } = require('./keystrokes');
+const handleKeyInput = require('./keystrokes');
+
 
 
 const monitors = Monitor.all();
@@ -81,8 +82,6 @@ function connectToWebsocket() {
 
   // Connect to the WebSocket server
   const ws = new WebSocket('ws://192.168.178.251:8080');
-  let mousePressed = false;
-  const ignoreKeys = ['Meta'];
 
   ws.on('message', async (data) => {
     try {

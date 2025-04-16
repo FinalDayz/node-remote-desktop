@@ -17,7 +17,10 @@
             return false;
         }
 
-        return {x: x/imagePosition.width, y: y/imagePosition.height};
+        return {
+          x: Math.round(x/imagePosition.width),
+          y: Math.round(y/imagePosition.height)
+        };
     }
 
     // Send mouse move and click events to the Electron main app
