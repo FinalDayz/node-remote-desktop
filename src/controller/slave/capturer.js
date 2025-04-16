@@ -92,7 +92,7 @@ function connectToWebsocket() {
 
       console.log('🍔 ~ ws.on ~ message:', message)
 
-      handleKeyInput(message.type, message.key, message.code);
+      handleKeyInput(message);
 
     } catch (error) {
       console.error('Error processing WebSocket message:', error);

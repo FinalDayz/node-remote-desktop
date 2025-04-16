@@ -7,33 +7,35 @@ const mappedKeys = {
   'ArrowDown': 'down',
 };
 
-async function handleKeyInput(type, key, code) {
+async function handleKeyInput(message) {
+
+  const { key, type } = message;
 
   if (key in mappedKeys) {
     key = mappedKeys[key];
   }
 
-  if (type === 'key-down') {
-    const { key, code } = message;
+  if (message.type === 'key-down') {
+    const { key } = message;
     if (ignoreKeys.includes(key)) {
       return;
     }
     if (key.length === 1) {
-      robot.typeString(key);
+      robot.typeString(message.key);
     } else {
       robot.keyToggle(key.toLowerCase(), 'down');
     }
   }
 
-  if (type === 'key-up') {
-    const { key, code } = message;
+  if (message.type === 'key-up') {
+    const { key } = message;
     if (key.length === 1 || ignoreKeys.includes(key)) {
       return;
     }
     robot.keyToggle(key.toLowerCase(), 'up');
   }
 
-  if (['mouse-move', 'mouse-down', 'mouse-up'].includes(type)) {
+  if (['mouse-move', 'mouse-down', 'mouse-up'].includes(message.type)) {
     const { x, y } = message;
     if (mousePressed) {
       robot.dragMouse(x, y);
@@ -42,7 +44,7 @@ async function handleKeyInput(type, key, code) {
     }
   }
 
-  if (type === 'mouse-down') {
+  if (message.type === 'mouse-down') {
     await sleep(25);
     const { button } = message;
     mousePressed = true;
@@ -50,7 +52,7 @@ async function handleKeyInput(type, key, code) {
     console.log(`Mouse button ${button} pressed down`);
   }
 
-  if (type === 'mouse-up') {
+  if (message.type === 'mouse-up') {
     await sleep(25);
     const { button } = message;
     mousePressed = false;
