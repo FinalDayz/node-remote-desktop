@@ -8,7 +8,6 @@ const { sleep } = require('./utils');
 console.log('🍔 ~ handleKeyInput:', handleKeyInput)
 
 
-
 const monitors = Monitor.all();
 
 // const cv = require("opencv4nodejs");
@@ -66,7 +65,6 @@ async function tinker() {
 
   console.log('took', (Date.now() - start) + 'ms to execute. Output size: ', outputJPGBuffer.length)
   fs.writeFileSync("output.jpg", outputJPGBuffer);
-
 }
 
 function start() {
@@ -119,17 +117,17 @@ async function sendImageEverySecond(ws) {
   let lastSend = Date.now();
 
   while (true) {
-    await new Promise(resolve => setTimeout(resolve, 250));
+    await new Promise(resolve => setTimeout(resolve, 150));
 
     const beforeSend = Date.now();
     // Capture the screenshot again
-    const image = monitor.captureImageSync();
+    const image = monitor.captureImageSync()
+      ;
     const pngImageBuffer = image.toJpegSync();
-    const base64Image = pngImageBuffer.toString('base64');
-    ws.send(`[IMAGE]data:image/jpeg;base64,${base64Image}`);
+    ws.send(pngImageBuffer, { binary: true });
 
     console.log(
-      Math.round(base64Image.length / 1024) + ' KB ] Image sent to WebSocket server total:',
+      Math.round(pngImageBuffer.length / 1024), ' KB] ',
       Date.now() - lastSend,
       'Sending image took:', Date.now() - beforeSend, 'ms'
     );

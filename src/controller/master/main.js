@@ -90,6 +90,19 @@ function handleJSONMessage(messageStr) {
   }
 }
 
+function handleRawImage(imageBuffer) {
+  const filePath = path.join(__dirname, 'image.jpg');
+  fs.writeFile(filePath, imageBuffer, (err) => {
+    if (err) {
+      console.error('Failed to save image:', err);
+      return;
+    }
+
+    // Send the file path to the renderer process
+    win.webContents.send('update-image', filePath);
+  });
+}
+
 function handleImageMessage(messageStr) {
   // Assuming message is a base64 encoded JPG
   const base64Data = messageStr.replace(/^data:image\/jpeg;base64,/, "");
@@ -109,14 +122,19 @@ function handleImageMessage(messageStr) {
 wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     // Convert the Buffer to a string
-    const messageStr = message.toString('utf8');
-    if (messageStr.startsWith('[IMAGE]')) {
-      handleImageMessage(messageStr.substring(7));
+    if (message.length > 1000) {
+      handleRawImage(message);
+      // if (messageStr.startsWith('[IMAGE]')) {
+      //   handleImageMessage(messageStr.substring(7));
+      // }
+    } else {
+      const messageStr = message.toString('utf8');
+      if (messageStr.startsWith('[JSON]')) {
+        console.log('🍔 ~ ws.on ~ messageStr:', messageStr)
+        handleJSONMessage(messageStr.substring(6));
+      }
     }
 
-    if (messageStr.startsWith('[JSON]')) {
-      console.log('🍔 ~ ws.on ~ messageStr:', messageStr)
-      handleJSONMessage(messageStr.substring(6));
-    }
+
   });
 });

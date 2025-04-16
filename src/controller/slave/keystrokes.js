@@ -25,7 +25,6 @@ async function handleKeyInput(message) {
     if (key.length === 1) {
       robot.typeString(key);
     } else {
-      console.log('🍔 ~ handleKeyInput ~ key.toLowerCase():', key.toLowerCase())
       robot.keyToggle(key.toLowerCase(), 'down');
     }
   }
