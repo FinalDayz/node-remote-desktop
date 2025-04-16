@@ -5,6 +5,7 @@ const robot = require("robotjs");
 const sharp = require('sharp');
 
 
+const monitors = Monitor.all();
 
 // const cv = require("opencv4nodejs");
 
@@ -165,7 +166,7 @@ function connectToWebsocket() {
 start();
 
 async function sendImageEverySecond() {
-  const monitor = Monitor.all().find(monitor => monitor.isPrimary)
+  const monitor = monitors.find(monitor => monitor.isPrimary)
   while (true) {
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -207,7 +208,6 @@ function sendConfig() {
 
 // console.log(Array.from(buffer.values()), buffer.length);
 
-// const monitors = Monitor.all();
 
 // monitors.forEach((item) => {
 //   console.log(
