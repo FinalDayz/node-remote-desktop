@@ -7,7 +7,7 @@ const mappedKeys = {
   'ArrowDown': 'down',
 };
 
-async function handleKeyInput(key, code) {
+async function handleKeyInput(type, key, code) {
 
   if (key in mappedKeys) {
     key = mappedKeys[key];
