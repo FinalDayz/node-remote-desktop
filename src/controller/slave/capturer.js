@@ -4,6 +4,7 @@ const WebSocket = require("ws");
 const robot = require("robotjs");
 const sharp = require('sharp');
 const handleKeyInput = require('./keystrokes');
+const { sleep } = require('./utils');
 console.log('🍔 ~ handleKeyInput:', handleKeyInput)
 
 
@@ -66,12 +67,6 @@ async function tinker() {
   console.log('took', (Date.now() - start) + 'ms to execute. Output size: ', outputJPGBuffer.length)
   fs.writeFileSync("output.jpg", outputJPGBuffer);
 
-}
-
-async function sleep(delay) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, delay);
-  });
 }
 
 function start() {
