@@ -4,6 +4,7 @@ const WebSocket = require("ws");
 const robot = require("robotjs");
 const sharp = require('sharp');
 const handleKeyInput = require('./keystrokes');
+console.log('🍔 ~ handleKeyInput:', handleKeyInput)
 
 
 

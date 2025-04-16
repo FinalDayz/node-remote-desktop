@@ -59,4 +59,4 @@ async function handleKeyInput(key, code) {
   }
 }
 
-exports.default = handleKeyInput
+module.exports = handleKeyInput
