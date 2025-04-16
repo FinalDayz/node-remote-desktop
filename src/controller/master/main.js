@@ -91,9 +91,9 @@ function handleJSONMessage(messageStr) {
 }
 
 function handleImageMessage(messageStr) {
-    // Assuming message is a base64 encoded PNG
-    const base64Data = messageStr.replace(/^data:image\/png;base64,/, "");
-    const filePath = path.join(__dirname, 'image.png');
+    // Assuming message is a base64 encoded JPG
+    const base64Data = messageStr.replace(/^data:image\/jpeg;base64,/, "");
+    const filePath = path.join(__dirname, 'image.jpg');
 
     fs.writeFile(filePath, base64Data, 'base64', (err) => {
         if (err) {

@@ -73,14 +73,14 @@ async function sleep(delay) {
 }
 
 function start() {
-  tinker();
-  // connectToWebsocket();
+  // tinker();
+  connectToWebsocket();
 }
 
 function connectToWebsocket() {
 
   // Connect to the WebSocket server
-  const ws = new WebSocket('ws://localhost:8080');
+  const ws = new WebSocket('ws://192.168.178.251:8080');
   let mousePressed = false;
   const ignoreKeys = ['Meta'];
 
@@ -165,8 +165,9 @@ function connectToWebsocket() {
 start();
 
 async function sendImageEverySecond() {
+  const monitor = Monitor.all().find(monitor => monitor.isPrimary)
   while (true) {
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Capture the screenshot again
     image = monitor.captureImageSync();
