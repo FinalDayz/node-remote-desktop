@@ -5,4 +5,4 @@ async function sleep(delay) {
 }
 
 
-module.sleep = sleep;
+exports.sleep = sleep;
