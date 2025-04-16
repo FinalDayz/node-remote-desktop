@@ -152,7 +152,7 @@ function connectToWebsocket() {
     // // Send the base64 encoded image to the WebSocket server
     // ws.send(`data:image/png;base64,${base64Image}`);
     // console.log('Image sent to WebSocket server');
-    sendConfig();
+    sendConfig(ws);
     sendImageEverySecond();
   });
 
@@ -178,7 +178,7 @@ async function sendImageEverySecond() {
   }
 }
 
-function sendConfig() {
+function sendConfig(ws) {
   const monitorConfig = [];
 
   monitors.forEach((item) => {
