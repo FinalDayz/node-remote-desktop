@@ -13,19 +13,19 @@ async function handleKeyInput(key, code) {
     key = mappedKeys[key];
   }
 
-  if (message.type === 'key-down') {
+  if (type === 'key-down') {
     const { key, code } = message;
     if (ignoreKeys.includes(key)) {
       return;
     }
     if (key.length === 1) {
-      robot.typeString(message.key);
+      robot.typeString(key);
     } else {
       robot.keyToggle(key.toLowerCase(), 'down');
     }
   }
 
-  if (message.type === 'key-up') {
+  if (type === 'key-up') {
     const { key, code } = message;
     if (key.length === 1 || ignoreKeys.includes(key)) {
       return;
@@ -33,7 +33,7 @@ async function handleKeyInput(key, code) {
     robot.keyToggle(key.toLowerCase(), 'up');
   }
 
-  if (['mouse-move', 'mouse-down', 'mouse-up'].includes(message.type)) {
+  if (['mouse-move', 'mouse-down', 'mouse-up'].includes(type)) {
     const { x, y } = message;
     if (mousePressed) {
       robot.dragMouse(x, y);
@@ -42,7 +42,7 @@ async function handleKeyInput(key, code) {
     }
   }
 
-  if (message.type === 'mouse-down') {
+  if (type === 'mouse-down') {
     await sleep(25);
     const { button } = message;
     mousePressed = true;
@@ -50,7 +50,7 @@ async function handleKeyInput(key, code) {
     console.log(`Mouse button ${button} pressed down`);
   }
 
-  if (message.type === 'mouse-up') {
+  if (type === 'mouse-up') {
     await sleep(25);
     const { button } = message;
     mousePressed = false;
