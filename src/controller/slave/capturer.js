@@ -89,7 +89,7 @@ function connectToWebsocket() {
     try {
       const message = JSON.parse(data);
 
-      await sleep(3500);
+      // await sleep(3500);
 
       console.log('🍔 ~ ws.on ~ message:', message)
 
@@ -153,7 +153,7 @@ function connectToWebsocket() {
     // ws.send(`data:image/png;base64,${base64Image}`);
     // console.log('Image sent to WebSocket server');
     sendConfig(ws);
-    sendImageEverySecond();
+    sendImageEverySecond(ws);
   });
 
   ws.on('error', (error) => {
@@ -165,16 +165,16 @@ function connectToWebsocket() {
 
 start();
 
-async function sendImageEverySecond() {
+async function sendImageEverySecond(ws) {
   const monitor = monitors.find(monitor => monitor.isPrimary)
   while (true) {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     // Capture the screenshot again
-    image = monitor.captureImageSync();
-    const pngImageBuffer = image.toPngSync();
+    const image = monitor.captureImageSync();
+    const pngImageBuffer = image.toJpegSync();
     const base64Image = pngImageBuffer.toString('base64');
-    ws.send(`[IMAGE]data:image/png;base64,${base64Image}`);
+    ws.send(`[IMAGE]data:image/jpeg;base64,${base64Image}`);
   }
 }
 
