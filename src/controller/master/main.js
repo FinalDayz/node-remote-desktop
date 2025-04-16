@@ -14,8 +14,8 @@ function sendMouseEvent(type, args) {
   sendToAllClients({
     type: type,
     button: args.button,
-    x: args.x,
-    y: args.y
+    x: Math.round(args.x),
+    y: Math.round(args.y),
   });
 }
 
