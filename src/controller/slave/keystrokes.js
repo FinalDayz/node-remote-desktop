@@ -1,3 +1,5 @@
+const robot = require("robotjs");
+
 let mousePressed = false;
 const ignoreKeys = ['Meta'];
 const mappedKeys = {
