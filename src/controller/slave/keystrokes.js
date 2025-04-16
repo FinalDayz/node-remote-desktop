@@ -1,5 +1,5 @@
 const robot = require("robotjs");
-const sleep = require('./utils');
+const { sleep } = require('./utils');
 
 let mousePressed = false;
 const ignoreKeys = ['Meta'];
