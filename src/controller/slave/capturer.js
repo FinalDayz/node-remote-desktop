@@ -124,7 +124,7 @@ async function sendImageEverySecond(ws) {
   let lastSend = Date.now();
 
   while (true) {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 250));
 
     const beforeSend = Date.now();
     // Capture the screenshot again
@@ -133,7 +133,11 @@ async function sendImageEverySecond(ws) {
     const base64Image = pngImageBuffer.toString('base64');
     ws.send(`[IMAGE]data:image/jpeg;base64,${base64Image}`);
 
-    console.log(base64Image.length / 1024 / 1024 + 'MB] Image sent to WebSocket server total: ', Date.now() - lastSend, 'Sending image took: ', Date.now() - beforeSend, 'ms');
+    console.log(
+      Math.round(base64Image.length / 1024) + ' KB ] Image sent to WebSocket server total:',
+      Date.now() - lastSend,
+      'Sending image took:', Date.now() - beforeSend, 'ms'
+    );
     lastSend = Date.now();
   }
 }
