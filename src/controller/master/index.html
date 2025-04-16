@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PNG Viewer</title>
+</head>
+<body style="margin: 0; padding: 0; overflow: hidden;">
+  <img id="image" src="image.png" alt="PNG Image" style="width: 100vw; height: 100vh; object-fit: contain; display: block;" />
+  <script>
+    const { ipcRenderer, BrowserWindow } = require('electron');
+
+    let imagePosition = { x: 0, y: 0, width: 0, height: 0 };
+
+    function toImagePosition({x, y}) {
+        x -= imagePosition.x;
+        y -= imagePosition.y;
+        if(x > imagePosition.width || y > imagePosition.height || x < 0 || y < 0) {
+            return false;
+        }
+
+        return {x: x/imagePosition.width, y: y/imagePosition.height};
+    }
+
+    // Send mouse move and click events to the Electron main app
+    document.addEventListener('mousemove', (event) => {
+      
+      const convertedPos = toImagePosition({x: event.clientX, y: event.clientY});
+      console.log('🍔 ~ document.addEventListener ~ convertedPos:', convertedPos)
+      if(!convertedPos) {
+        return;
+      }
+      ipcRenderer.send('mouse-move', convertedPos);
+    });
+
+    document.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+    });  
+
+    document.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      const convertedPos = toImagePosition({x: event.clientX, y: event.clientY});
+      if(!convertedPos) {
+      return;
+      }
+      const button = event.button === 2 ? 'right' : 'left';
+      ipcRenderer.send('mouse-down', { ...convertedPos, button });
+    });
+
+    document.addEventListener('mouseup', (event) => {
+      const convertedPos = toImagePosition({x: event.clientX, y: event.clientY});
+      if(!convertedPos) {
+      return;
+      }
+      const button = event.button === 2 ? 'right' : 'left';
+      ipcRenderer.send('mouse-up', { ...convertedPos, button });
+    });
+
+    document.addEventListener('dragend', (event) => {
+      const convertedPos = toImagePosition({x: event.clientX, y: event.clientY});
+      if(!convertedPos) {
+        return;
+      }
+      const button = event.button === 2 ? 'right' : 'left';
+      ipcRenderer.send('mouse-up', { ...convertedPos, button });
+    });
+
+
+    // Send key press and release events to the Electron main app
+    document.addEventListener('keydown', (event) => {
+      ipcRenderer.send('key-down', { key: event.key, code: event.code });
+    });
+
+    document.addEventListener('keyup', (event) => {
+      ipcRenderer.send('key-up', { key: event.key, code: event.code });
+    });
+
+
+    ipcRenderer.on('update-image', (event, filePath) => {
+      document.getElementById('image').src = `${filePath}?t=${Date.now()}`;
+      const clientRects = document.getElementById('image').getClientRects()[0];
+
+      imagePosition = {
+        x: Math.floor(clientRects.x),
+        y: Math.floor(clientRects.y),
+        width: Math.floor(clientRects.width),
+        height: Math.floor(clientRects.height),
+      };
+    });
+
+    // Set up WebSocket client
+    const ws = new WebSocket('ws://localhost:8080');
+
+    ws.onopen = () => {
+      console.log('WebSocket connection established');
+    };
+
+    ws.onmessage = (event) => {
+      // console.log('Received message:', event.data);
+    };
+  </script>
+</body>
+</html>

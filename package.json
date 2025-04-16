@@ -1,0 +1,24 @@
+{
+  "name": "node-remote-desktop",
+  "version": "1.0.0",
+  "description": "Remote desktop application running on Node",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "master": "electron src/controller/master/main.js",
+    "slave": "node src/controller/slave/capturer.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "node-screenshots": "^0.2.1",
+    "odiff": "^1.5.0",
+    "robotjs": "^0.6.0",
+    "sharp": "^0.34.1",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "electron": "^35.1.5"
+  }
+}
