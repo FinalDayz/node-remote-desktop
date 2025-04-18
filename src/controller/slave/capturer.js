@@ -3,20 +3,12 @@ const { Monitor } = require("node-screenshots");
 const WebSocket = require("ws");
 const robot = require("robotjs");
 const sharp = require('sharp');
-const handleKeyInput = require('./keystrokes');
 const { sleep } = require('./utils');
-console.log('🍔 ~ handleKeyInput:', handleKeyInput)
+const { IP } = require('./constants');
+const cp = require('child_process');
 
 
 const monitors = Monitor.all();
-
-// const cv = require("opencv4nodejs");
-
-// function toJPG(buffer, width, height) {
-//   var jpegImageData = new Jpeg(buffer, width, height,);
-
-//   return jpegImageData;
-// }
 
 async function tinker() {
   // Capture the screenshot
@@ -71,38 +63,40 @@ async function tinker() {
 
 function start() {
   // tinker();
+  startKeystrokes();
   connectToWebsocket();
+}
+
+function startKeystrokes() {
+  console.log(`node ${__dirname}/keystrokes.js`)
+  const child = cp.spawn('node', ['keystrokes.js'], { cwd: `${__dirname}/` });
+
+  child.stdout.on('data', (data) => {
+    console.log(`[keystrokes] ${data}`);
+  });
+
+  child.stderr.on('data', (data) => {
+    console.error(`[keystrokes] ${data}`);
+  });
+
+  child.on('exit', function (code, signal) {
+    console.log('child process exited with ' +
+      `code ${code} and signal ${signal}`);
+
+    process.exit(1);
+  });
 }
 
 function connectToWebsocket() {
 
-  const IP = '127.0.0.1';
-  // const IP = '192.168.178.251';
-
-  const URL = `ws://${IP}:8090`
   const VIDEO_URL = `ws://${IP}:8040`
-
-  // Connect to the WebSocket server
-  const wsCommands = new WebSocket(URL);
   const wsVideo = new WebSocket(VIDEO_URL);
-
-  wsCommands.on('message', async (data) => {
-    const message = JSON.parse(data);
-    // console.log('🍔 ~ ws.on ~ message:', message)
-    handleKeyInput(message);
-  });
 
   wsVideo.on('open', () => {
     sendImageLoop(wsVideo);
   });
 
-  wsCommands.on('open', () => {
-    // sendImageLoop(wsCommands);
-    sendConfig(wsCommands);
-  });
-
   onWsError(wsVideo);
-  onWsError(wsCommands);
 }
 
 function onWsError(ws) {
@@ -111,7 +105,6 @@ function onWsError(ws) {
   });
 }
 
-start();
 
 async function sendImageLoop(ws) {
   const monitor = monitors.find(monitor => monitor.isPrimary);
@@ -150,46 +143,5 @@ async function sendImageLoop(ws) {
   }
 }
 
-function sendConfig(ws) {
-  const monitorConfig = [];
 
-  monitors.forEach((item) => {
-    monitorConfig.push({
-      id: item.id,
-      name: item.name,
-      x: item.x,
-      y: item.y,
-      width: item.width,
-      height: item.height,
-      rotation: item.rotation,
-      scaleFactor: item.scaleFactor,
-      frequency: item.frequency,
-      isPrimary: item.isPrimary
-    });
-  });
-  const config = {
-    type: 'config',
-    monitors: monitorConfig,
-  };
-
-  ws.send('[JSON]' + JSON.stringify(config));
-}
-
-
-// const buffer = image.toRawSync();
-
-// console.log(Array.from(buffer.values()), buffer.length);
-
-
-// monitors.forEach((item) => {
-//   console.log(
-//     "Monitor:",
-//     item.id,
-//     item.name,
-//     [item.x, item.y, item.width, item.height],
-//     item.rotation,
-//     item.scaleFactor,
-//     item.frequency,
-//     item.isPrimary
-//   );
-// });
+start();

@@ -1,5 +1,19 @@
-const robot = require("robotjs");
+const { Monitor } = require("node-screenshots");
+const WebSocket = require("ws");
 const { sleep } = require('./utils');
+const { IP } = require('./constants');
+
+const robot = require("robotjs");
+// const robot = {
+//   keyTap: () => { },
+//   keyToggle: () => { },
+//   typeString: () => { },
+//   moveMouse: () => { },
+//   dragMouse: () => { },
+//   mouseToggle: () => { },
+// }
+
+const monitors = Monitor.all();
 
 let mousePressed = false;
 const ignoreKeys = ['Meta'];
@@ -9,6 +23,53 @@ const mappedKeys = {
   'ArrowUp': 'up',
   'ArrowDown': 'down',
 };
+
+function start() {
+  connectToWebsocket();
+}
+
+function connectToWebsocket() {
+
+  const URL = `ws://${IP}:8090`
+
+  const wsCommands = new WebSocket(URL);
+
+  wsCommands.on('message', async (data) => {
+    const message = JSON.parse(data);
+    handleKeyInput(message);
+  });
+
+  wsCommands.on('open', () => {
+    sendConfig(wsCommands);
+  });
+
+  onWsError(wsCommands);
+}
+
+function sendConfig(ws) {
+  const monitorConfig = [];
+
+  monitors.forEach((item) => {
+    monitorConfig.push({
+      id: item.id,
+      name: item.name,
+      x: item.x,
+      y: item.y,
+      width: item.width,
+      height: item.height,
+      rotation: item.rotation,
+      scaleFactor: item.scaleFactor,
+      frequency: item.frequency,
+      isPrimary: item.isPrimary
+    });
+  });
+  const config = {
+    type: 'config',
+    monitors: monitorConfig,
+  };
+
+  ws.send('[JSON]' + JSON.stringify(config));
+}
 
 async function handleKeyInput(message) {
 
@@ -62,4 +123,12 @@ async function handleKeyInput(message) {
   }
 }
 
-module.exports = handleKeyInput
+
+function onWsError(ws) {
+  ws.on('error', (error) => {
+    console.error('WebSocket error:', error);
+  });
+}
+
+start();
+
