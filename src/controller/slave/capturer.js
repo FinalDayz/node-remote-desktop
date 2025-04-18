@@ -49,7 +49,7 @@ async function tinker() {
       channels: 4
     }
   })
-    .jpeg({ quality: 50 })
+    .jpeg({ quality: 70 })
     // .removeAlpha()
     // .resize({
     //   width: 1920,
