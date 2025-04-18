@@ -117,6 +117,8 @@ async function sendImageLoop(ws) {
     }
   }
 
+  let lastImage = null;
+
   while (true) {
     await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -131,6 +133,12 @@ async function sendImageLoop(ws) {
       .jpeg({ quality: 50 })
       .resize({ width: 1920, })
       .toBuffer();
+
+    if (lastImage !== null && lastImage.length === outputJPGBuffer.length && lastImage.equals(outputJPGBuffer)) {
+      continue;
+    }
+
+    lastImage = outputJPGBuffer;
 
     ws.send(outputJPGBuffer, { binary: true });
 
