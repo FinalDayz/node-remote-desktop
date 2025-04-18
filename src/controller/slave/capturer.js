@@ -27,7 +27,8 @@ async function tinker() {
   console.log('captured 1')
 
   await sleep(1000)
-  const rawImg2 = monitor.captureImageSync().toRawSync();
+  const image1 = monitor.captureImageSync();
+  const rawImg2 = image1.toRawSync();
   console.log('captured 2')
 
   const start1 = Date.now();
@@ -49,21 +50,22 @@ async function tinker() {
   const start = Date.now();
 
 
-  const outputJPGBuffer = await sharp(diff, {
+  const outputJPGBuffer = await sharp(rawImg1, {
     raw: {
       width: monitor.width * monitor.scaleFactor,
       height: monitor.height * monitor.scaleFactor,
       channels: 4
     }
   })
-    .jpeg({ mozjpeg: true })
-    .resize({
-      width: 1920,
-    })
+    .jpeg({ quality: 50 })
+    // .removeAlpha()
+    // .resize({
+    //   width: 1920,
+    // })
     .toBuffer();
 
-
-  console.log('took', (Date.now() - start) + 'ms to execute. Output size: ', outputJPGBuffer.length)
+  console.log('took', (Date.now() - start) + 'ms to execute. Output size: ', outputJPGBuffer.length / 1024);
+  console.log('Direct JPEG output size:', image1.toJpegSync().length / 1024);
   fs.writeFileSync("output.jpg", outputJPGBuffer);
 }
 
@@ -74,60 +76,73 @@ function start() {
 
 function connectToWebsocket() {
 
+  const IP = '127.0.0.1';
+  // const IP = '192.168.178.251';
+
+  const URL = `ws://${IP}:8090`
+  const VIDEO_URL = `ws://${IP}:8040`
+
   // Connect to the WebSocket server
-  const ws = new WebSocket('ws://192.168.178.251:8080');
+  const wsCommands = new WebSocket(URL);
+  const wsVideo = new WebSocket(VIDEO_URL);
 
-  ws.on('message', async (data) => {
-    try {
-      const message = JSON.parse(data);
-
-      // await sleep(3500);
-
-      console.log('🍔 ~ ws.on ~ message:', message)
-
-      handleKeyInput(message);
-
-    } catch (error) {
-      console.error('Error processing WebSocket message:', error);
-    }
+  wsCommands.on('message', async (data) => {
+    const message = JSON.parse(data);
+    // console.log('🍔 ~ ws.on ~ message:', message)
+    handleKeyInput(message);
   });
 
-  ws.on('open', () => {
-    // // Convert the PNG buffer to a base64 string
-    // const base64Image = pngImageBuffer.toString('base64');
-
-    // // Send the base64 encoded image to the WebSocket server
-    // ws.send(`data:image/png;base64,${base64Image}`);
-    // console.log('Image sent to WebSocket server');
-    sendConfig(ws);
-    sendImageEverySecond(ws);
+  wsVideo.on('open', () => {
+    sendImageLoop(wsVideo);
   });
 
+  wsCommands.on('open', () => {
+    // sendImageLoop(wsCommands);
+    sendConfig(wsCommands);
+  });
+
+  onWsError(wsVideo);
+  onWsError(wsCommands);
+}
+
+function onWsError(ws) {
   ws.on('error', (error) => {
     console.error('WebSocket error:', error);
   });
-
 }
-
 
 start();
 
-async function sendImageEverySecond(ws) {
+async function sendImageLoop(ws) {
   const monitor = monitors.find(monitor => monitor.isPrimary);
   let lastSend = Date.now();
+  const sharpConfig = {
+    raw: {
+      width: monitor.width * monitor.scaleFactor,
+      height: monitor.height * monitor.scaleFactor,
+      channels: 4
+    }
+  }
 
   while (true) {
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     const beforeSend = Date.now();
-    // Capture the screenshot again
-    const image = monitor.captureImageSync()
-      ;
-    const pngImageBuffer = image.toJpegSync();
-    ws.send(pngImageBuffer, { binary: true });
+
+    const image = monitor.captureImageSync();
+
+    // const outputJPGBuffer = image.toJpegSync();
+    // ws.send(outputJPGBuffer, { binary: true });
+
+    const outputJPGBuffer = await sharp(image.toRawSync(), sharpConfig)
+      .jpeg({ quality: 50 })
+      .resize({ width: 1920, })
+      .toBuffer();
+
+    ws.send(outputJPGBuffer, { binary: true });
 
     console.log(
-      Math.round(pngImageBuffer.length / 1024), ' KB] ',
+      Math.round(outputJPGBuffer.length / 1024), ' KB] ',
       Date.now() - lastSend,
       'Sending image took:', Date.now() - beforeSend, 'ms'
     );

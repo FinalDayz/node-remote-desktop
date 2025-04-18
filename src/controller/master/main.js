@@ -20,7 +20,7 @@ function sendMouseEvent(type, args) {
 }
 
 function sendToAllClients(message) {
-  wss.clients.forEach((client) => {
+  wsCommand.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(message));
     }
@@ -28,7 +28,7 @@ function sendToAllClients(message) {
 }
 
 ipcMain.on('mouse-move', (_, args) => {
-  if (Date.now() - lastMouseMove < 15) {
+  if (Date.now() - lastMouseMove < 50) {
     return;
   }
   lastMouseMove = Date.now();
@@ -78,7 +78,8 @@ function createWindow() {
 app.on('ready', createWindow);
 
 // Set up WebSocket server
-const wss = new WebSocket.Server({ port: 8080 });
+const wsVideo = new WebSocket.Server({ port: 8040 });
+const wsCommand = new WebSocket.Server({ port: 8090 });
 
 function handleJSONMessage(messageStr) {
   const data = JSON.parse(messageStr);
@@ -119,22 +120,30 @@ function handleImageMessage(messageStr) {
   });
 }
 
-wss.on('connection', (ws) => {
+wsCommand.on('connection', (ws) => {
   ws.on('message', (message) => {
     // Convert the Buffer to a string
+
     if (message.length > 1000) {
       handleRawImage(message);
-      // if (messageStr.startsWith('[IMAGE]')) {
-      //   handleImageMessage(messageStr.substring(7));
-      // }
-    } else {
-      const messageStr = message.toString('utf8');
-      if (messageStr.startsWith('[JSON]')) {
-        console.log('🍔 ~ ws.on ~ messageStr:', messageStr)
-        handleJSONMessage(messageStr.substring(6));
-      }
+      return;
     }
 
+    const messageStr = message.toString('utf8');
+    if (messageStr.startsWith('[JSON]')) {
+      console.log('🍔 ~ ws.on ~ messageStr:', messageStr)
+      handleJSONMessage(messageStr.substring(6));
+    }
+  });
+});
 
+wsVideo.on('connection', (ws) => {
+  ws.on('message', (message) => {
+    // Convert the Buffer to a string
+
+    handleRawImage(message);
+    // if (messageStr.startsWith('[IMAGE]')) {
+    //   handleImageMessage(messageStr.substring(7));
+    // }
   });
 });
