@@ -26,6 +26,7 @@ const mappedKeys = {
 
 function start() {
   connectToWebsocket();
+  robot.setKeyboardDelay(1);
 }
 
 function connectToWebsocket() {
